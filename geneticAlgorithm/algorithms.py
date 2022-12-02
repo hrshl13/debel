@@ -4,8 +4,8 @@ from typing import List, Tuple, Callable
 #Terminologies Definition
 chromosome = List[int]
 population = List[chromosome]
-crossoverMethod = Callable[[chromosome, chromosome], Tuple[chromosome , chromosome]]
 FitnessDS  = List[Tuple[chromosome, int]]
+pairsList = List[Tuple[chromosome, chromosome]]
 
 #Common Methods
 def chromosomeToString(a:chromosome)->str:
@@ -35,53 +35,69 @@ def initialPopulationGeneration(size:int, chromosomeLength:int)->population:
     return [[choices([0,1], k=chromosomeLength)] for _ in range(size)]
 
 
-def selectionProcess(fds:FitnessDS, index:int)->Tuple[chromosome,chromosome]:
+def selectionProcess(fds:FitnessDS, index:int)->pairsList:
     """ 
-    It returns two parents from the set of candidates of the current generation based on their fitness.
+    It returns two parents from the set of candidates of the current generation based on their fitness.\n
+    Index - Name\n
+    0 - Roulette Selection\n
+    1 - Rank Based Selection\n
 
     Args:
         fds (FitnssDS): It is a list of tuples, which has two elements: the chromoome and it's fitness
 
     Returns:
-        Tuple[chromosome,chromosome]: It returns the selected parents in a form of a tuple
+        pairsList (List[Tuple[chromosome,chromosome]]) : It returns the list of selected parents in a form of a list of tuples
     """
-    def rouletteSelection(fds:FitnessDS)->Tuple[chromosome, chromosome]:
+    def rouletteSelection(fds:FitnessDS)->pairsList:
         rouletteWheel=[]
         for i in fds:
             chromo, fitness = i
             rouletteWheel += [chromo]*fitness
-        parent1 = choice(rouletteWheel)
-        parent2 = choice(rouletteWheel)
-        while parent1==parent2:
+        parentsList=[]
+        for i in range((len(fds)//2 )+1):
+            parent1 = choice(rouletteWheel)
             parent2 = choice(rouletteWheel)
-        return parent1, parent2
+            while parent1==parent2:
+                parent2 = choice(rouletteWheel)
+            parentsList.append(parent1, parent2)
+        return parentsList
     
-    def rankBasedSelection(fds:FitnessDS):
+    def rankBasedSelection(fds:FitnessDS)->pairsList:
         rankDS = []
         fds.sort(key= lambda e:e[1])
         for i in range(len(fds)):
             chromo, fitness, rank = fds[i], i+1
             rankDS += [chromo]*rank
-        parent1 = choice(rankDS)
-        parent2 = choice(rankDS)
-        while parent1==parent2:
+        parentsList=[]
+        for i in range((len(fds)//2 )+1):
+            parent1 = choice(rankDS)
             parent2 = choice(rankDS)
-        return parent1, parent2
+            while parent1==parent2:
+                parent2 = choice(rankDS)
+            parentsList.append(parent1, parent2)
+        return parentsList
 
     selectionMethodList = [rouletteSelection, rankBasedSelection]
-    if index < 0:
+    if index < 0 or index > 1:
         raise IndexError("Wrong index selection for method.")
 
     return selectionMethodList[index](fds)
     
 
-def calculateFitness(p:population)->List[Tuple[chromosome, int]]:
+def calculateFitness(p:population)->FitnessDS:
     """
     It asks the fitness of the chromosome from the user, and then assignes it to the chromosome.
+
+    Args:
+        p (population): It is he list of chromosomes, or the population of indiviual solutions or candidates.
+
+    Returns:
+        FitnessDS: It is a list of individuals coupled with their individual fitness.
     """
     fitnessDS = []
     for i in p:
-        fit = input("Enter your rating from 0 to 10: ")
+        print(f"For Chromosome: {chromosomeToString(i)}: ")
+        fit = input("\tEnter your rating from 0 to 10: ")
         try:
             fit = int(fit)
         except ValueError:
@@ -101,7 +117,7 @@ def crossoverFunction(a:chromosome, b:chromosome,index:int) -> Tuple[chromosome,
         index: int
         index specifies which type of Crossover do we want to perform.
         
-        Values - Names\n
+        Index - Name\n
         0 - Single Point Crossover\n
         1 - Two Point Crossover\n
         2 - Multi Point Crossover\n
@@ -204,7 +220,7 @@ def crossoverFunction(a:chromosome, b:chromosome,index:int) -> Tuple[chromosome,
         
 
     crossoverMethodList = [singlePointCrossover, twoPointCrossover, multiPointCrossover, uniformCrossover]
-    if index < 0:
+    if index < 0 or index > 3:
         raise IndexError("Wrong index selection for method.")
 
     return crossoverMethodList[index](a,b)
@@ -227,20 +243,60 @@ def mutation( g:chromosome,probablity:float, numberOfMutations:int)->chromosome:
         g[index] = abs(g[index] - 1) if probablity<random() else g[index]
     return g
 
-def termination():
+def termination()->bool:
+    ask = input("Do you want to continue? (y/N): ")
+    if ask=='y':
+        return True
+    return False
     
-    pass
 
-
-def GeneticAlgorithmProcess():
-    initialPopulationGeneration()
+def simpleGeneticAlgorithm():
+    #Initial Population Input
+    try:
+        chromosomeLength = int(input("Enter Size of Chromosome: "))
+    except:
+        print("There was some weird input, we would consider size = 10.")
+        chromosomeLength = 10
+    
+    try:
+        size = int(input("Enter Size of the Population: "))
+    except:
+        print("There was some weird input, we would consider population size = 10.")
+        size = 10
+    #Initializing the GA
+    parentPopulation = initialPopulationGeneration(size = size, chromosomeLength = chromosomeLength)
+    #GA Methodology until Termination
     terminationCriteria = False
     while not terminationCriteria:
-        selectionProcess()
-        crossoverFunction()
-        mutation()
-    termination()
-    pass
+        #Calculating Fitness
+        fitDS = calculateFitness(population = parentPopulation)
+        #Selection Criteria
+        selectionIndex = int(input("Enter which Selecion Method you would like to implement: \n0 - Roulette Selection\n1 - Rank Based Selection: "))
+        #Selection of parents
+        pairsListofParents = selectionProcess(fds = fitDS, index = selectionIndex)
+        #Creating the next generation
+        nextGeneration=[]
+        for i in pairsListofParents:
+            child1, child2 = crossoverFunction(a = i[0], b = i[1])
+            nextGeneration.append(child1)
+            nextGeneration.append(child2)
+        #Mutation Input
+        try:
+            probab = float(input("Enter probablity for mutation in the next generation: "))
+        except:
+            print("Invalid Input!\n We will consider probablity as 0.5")
+        
+        try:
+            mutNum = int(input("Enter possible number of mutations in a particular chromosome: "))
+        except: 
+            print("Invalid Input! We will consider 2 mutations in a chromosome.")
+        #Mutating each child in the next generation
+        for nextChromo in nextGeneration:
+            nextChromo = mutation(nextChromo, probab, mutNum)
+        #Checking for termination criteria
+        terminationCriteria = termination()
+    
+    
 
 
 
