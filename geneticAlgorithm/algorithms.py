@@ -64,7 +64,7 @@ def selectionProcess(fds:FitnessDS, index:int, size:int)->pairsList:
             chromo, fitness = i
             rouletteWheel += [chromo]*fitness
         parentsList=[]
-        for i in range((len(fds)//2 )+1):
+        for i in range(1+len(fds)//2):
             parent1 = choice(rouletteWheel)
             parent2 = choice(rouletteWheel)
             while parent1==parent2:
@@ -78,7 +78,7 @@ def selectionProcess(fds:FitnessDS, index:int, size:int)->pairsList:
             chromo, fitness, rank = fds[i][0], fds[i][1], i+1
             rankDS += [chromo]*rank
         parentsList=[]
-        for i in range((len(fds)//2 )+1):
+        for i in range(1+len(fds)//2):
             parent1 = choice(rankDS)
             parent2 = choice(rankDS)
             while parent1==parent2:
@@ -275,9 +275,8 @@ def termination(nextGen:population)->bool:
     if ask=='y':
         return False
     return True
-    
 
-def simpleGeneticAlgorithm():
+def GeneticAlgorithm(gaIndex:int):
     #Initial Population Input
     try:
         chromosomeLength = int(input("Enter Size of Chromosome: "))
@@ -303,6 +302,11 @@ def simpleGeneticAlgorithm():
         pairsListofParents = selectionProcess(fds = fitDS, index = selectionIndex, size=size)
         #Creating the next generation
         nextGeneration=[]
+        if gaIndex==3:
+            for i in pairsListofParents:
+                p1, p2 = i
+                nextGeneration.append(p1)
+                nextGeneration.append(p2)
         #Crossover Input
         cross = int(input("Which type of Crossover: \n0 - Single Point Crossover \n1 - Two Point Crossovr \n2 - Multi Point Crossover \n3 - Uniform Crossover \nEnter: "))
         for i in pairsListofParents:
@@ -326,19 +330,32 @@ def simpleGeneticAlgorithm():
         terminationCriteria = termination(nextGeneration)
         parentPopulation = nextGeneration
     
-
+    
 def main():
+
     print("Enter your choice of Genetic Algorithm")
     try:
-        GA = int(input(f"1. Simple\n2. ({mu} + {lamda})\n3. ({mu}, {lamda})\n"))
-    except: 
-        print("Invalid Input!, we would go forward with Simple Genetic Algorithm.")
-    if GA==1:
-        simpleGeneticAlgorithm()
-    if GA<1 or GA>3:
-        print("Invalid Input!, we would go forward with Simple Genetic Algorithm.")
+        GA = int(input(f"1. Simple GA\n2. ({mu} + {lamda}) GA\n3. ({mu}, {lamda}) GA\n"))
+        if GA<1 or GA>3:
+            raise Exception("Invalid Input! We would go forward with Simple Genetic Algorithm.")
+    except Exception: 
+        GA=1
+    GeneticAlgorithm(GA)
+
 
 
 
 if __name__ == "__main__":
     main()
+
+def anish(name:str, age:int):
+    """
+    My name is Anish. I am not a dad.
+
+    Args:
+        name (str): _description_
+        age (int): _description_
+    """
+    pass
+
+anish("Name", 78)
