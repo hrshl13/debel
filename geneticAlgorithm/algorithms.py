@@ -347,15 +347,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-def anish(name:str, age:int):
-    """
-    My name is Anish. I am not a dad.
-
-    Args:
-        name (str): _description_
-        age (int): _description_
-    """
-    pass
-
-anish("Name", 78)
