@@ -1,0 +1,19 @@
+{% load sass_tags %}
+<!DOCTYPE html>
+
+<head>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link href="{% sass_src 'baseStyle.scss' %}" rel="stylesheet" type="text/css" />
+    {% if title %}
+    <title>Debel - {{ title }}</title>
+    {% else %}
+    <title>Debel</title>
+    {% endif %}
+</head>
+
+<body>
+    {% block content %}{% endblock content %}
+</body>
+
+</html>

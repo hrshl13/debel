@@ -1,0 +1,9 @@
+{
+	"version": 3,
+	"file": "baseStyle.css",
+	"sources": [
+		"baseStyle.scss"
+	],
+	"names": [],
+	"mappings": "AAAA,AAAA,IAAI,CAAC;EAED,KAAK,EAAE,IAAI;EACX,OAAO,EAAE,IAAI;EACb,UAAU,EAAE,MAAM;EAClB,UAAU,EAAE,IAAI,GAOnB;EAZD,AAOI,IAPA,CAOA,EAAE,CAAC;IACC,OAAO,EAAE,IAAI;IACb,UAAU,EAAE,IAAI,GACnB"
+}

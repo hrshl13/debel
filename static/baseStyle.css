@@ -1,0 +1,10 @@
+body {
+  width: 100%;
+  padding: 20px;
+  text-align: center;
+  background: grey; }
+  body h1 {
+    padding: 20px;
+    background: pink; }
+
+/*# sourceMappingURL=baseStyle.css.map */
