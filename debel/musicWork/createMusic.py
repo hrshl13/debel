@@ -1,18 +1,49 @@
-from pyo import Events, EventScale, EventSeq, Metro, Sine, CosTable, Iter, TrigEnv
+from pyo import Events, EventScale, EventSeq, Metro, Sine, CosTable, Iter, TrigEnv, Server
 from midiutil import MIDIFile
 from typing import List, Dict
-from sys import path
-from os import makedirs, path
+import os
 from music21.instrument import AcousticGuitar, Piano, Organ, AltoSaxophone, Flute
 from music21 import converter
-from algorithms import chromosomeToString, chromosome
-
-
+from .algorithms import chromosomeToString, chromosome
 BITS_PER_NOTE=4
 """
 Number of bits assigned for a single note 
 """
 
+"""
+Inputs from User
+3 types of Users:
+    1. Laymen
+    2. Music Enthusiasts
+    3. GA Specialist
+3 types of input:
+    a) Laymen
+        1. Mood? Happy, Sad
+        2. Time (in seconds) 16 seconds
+        3. Fast/Slow (Only 2 fixed bpms, 120 and 180)
+        4. Instrument
+    b) Music Enthusiasts
+        1. Number of Bars
+        2. Number of notes per bar? (Time Signature)
+        3. BPM
+        4. Key Note 
+        5. Scale
+        6. Scale Root (int)
+        7. Pauses?
+        8. Volume??
+        9. Instrument
+    c) GA Specialist
+        1. Chromosome Length (would have to calculate stuff differently)
+        2. Mood (Happy/Sad)
+        3. Instrument
+        4. Type of GA Evolution Strategy
+        5. Population Size
+        6. Selecion Method
+        7. Type of Crossover
+        8. Mutation %
+        9. Number of Mutations
+        
+"""
 
 # The list of Scales, Keys and Instruments as allowed by the EventScale class of pyo
 SCALES = ["major", "minorH", "minorM", "ionian", "dorian", "phrygian", "lydian", "mixolydian", "aeolian", "locrian", "wholeTone", "majorPenta", "minorPenta", "egyptian", "majorBlues", "minorBlues","minorHungarian"]
@@ -60,7 +91,7 @@ def bitsToInteger(bits:List[int])->int:
     bitString = chromosomeToString(bits)
     return int(bitString, 2)
 
-def eventDSCreation(numBars:int, gene: chromosome, isPause:bool, key:str, scale:str, scaleRoot:int, sig:str)->Dict:
+def eventDSCreation(numTracks:int,numBars:int, gene: chromosome, isPause:bool, key:str, scale:str, scaleRoot:int, sig:str)->Dict:
     
     notesPerBar = TIME_SIGNATURE_TO_BEATS[sig]
     # If the Time Signature is 5/4, implement Dave Brubeck Quartet's "Take Five" 5/4 
@@ -86,9 +117,9 @@ def eventDSCreation(numBars:int, gene: chromosome, isPause:bool, key:str, scale:
         if counter==5 and takeFive:
             counter=0
         if counter<3 and takeFive:
-            note_length = 4 / float(3)
+            noteLength = 4 / float(3)
         elif counter>=3 and counter<5 and takeFive:
-            note_length = 4 / float(2)
+            noteLength = 4 / float(2)
         
         if not isPause:
             # A kind of flag to introduce pauses in between
@@ -98,21 +129,26 @@ def eventDSCreation(numBars:int, gene: chromosome, isPause:bool, key:str, scale:
         if integer >= pow(2, BITS_PER_NOTE - 1):
             eventDS["pitch"] += [0]
             eventDS["volume"] += [0]
-            eventDS["beat"] += [note_length]
+            eventDS["beat"] += [noteLength]
         
         # Not a pause note
         else:
             # If there are two notes of the same pitch simultaneously,
             if len(eventDS["pitch"]) > 0 and eventDS["pitch"][-1] == integer:
                 # Just increase the note length of the previous note
-                eventDS["beat"][-1] += note_length
+                eventDS["beat"][-1] += noteLength
             else:
                 eventDS["pitch"] += [integer]
                 eventDS["volume"] += [127]
-                eventDS["beat"] += [note_length]
+                eventDS["beat"] += [noteLength]
         if takeFive:
             counter+=1
+    
+    steps = []
+    for step in range(numTracks):
+        steps.append([scl[(note+step*2) % len(scl)] for note in eventDS["pitch"]])
 
+    eventDS["pitch"] = steps
     return eventDS
 
 def eventCreation(numBars:int, gene: chromosome, isPause:bool, key:str, scale:str, scaleRoot:str, sig:str, bpm):
@@ -149,9 +185,9 @@ def metronome(bpm: int):
     freq = Iter(met, choice=[660, 440, 440, 440])
     return Sine(freq=freq, mul=amp).mix(2).out()
 
-def saveMidi(filename:str, numBars:int, gene:chromosome, isPause:bool, key:str, scale:str, scaleRoot:int, sig:str,bpm:int):
+def saveMidi(filename:str, numTracks:int,numBars:int, gene:chromosome, isPause:bool, key:str, scale:str, scaleRoot:int, sig:str,bpm:int):
 
-    eventDS = eventDSCreation(numBars, gene, isPause, key, scale, scaleRoot, sig)
+    eventDS = eventDSCreation(numTracks, numBars, gene, isPause, key, scale, scaleRoot, sig)
     if len(eventDS["pitch"][0]) != len(eventDS["beat"]) or len(eventDS["pitch"][0]) != len(eventDS["volume"]):
         raise ValueError
 
@@ -164,14 +200,13 @@ def saveMidi(filename:str, numBars:int, gene:chromosome, isPause:bool, key:str, 
     mf.addTrackName(track, time, "Sample Track")
     mf.addTempo(track, time, bpm)
 
-    for i, vel in enumerate(eventDS["volume"]):
-        if vel > 0:
+    for i, vol in enumerate(eventDS["volume"]):
+        if vol > 0:
             for step in eventDS["pitch"]:
-                mf.addNote(track, channel, step[i], time, eventDS["beat"][i], vel)
-
+                mf.addNote(track, channel, step[i], time, eventDS["beat"][i], vol)
         time += eventDS["beat"][i]
-
-    makedirs(path.dirname(filename), exist_ok=True)
+    
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "wb") as f:
         mf.writeFile(f)
     

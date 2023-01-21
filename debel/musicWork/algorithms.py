@@ -1,5 +1,5 @@
-from random import choices, randint, random, choice
-from typing import List, Tuple, Callable
+from random import choices, randint, choice
+from typing import List, Tuple
 
 #Terminologies Definition
 chromosome = List[int]
@@ -12,6 +12,18 @@ lamda = "\u03BB"
 muANDlambda = mu + " + " + lamda
 muORlambda = mu + " , " + lamda
 #Common Methods
+def stringtoChromosome(g:str)->chromosome:
+    """
+    Converts bitstring to Chromosome
+
+    Args:
+        g (str): A Bit string
+
+    Returns:
+        chromosome: List[Int]
+    """
+    return [int(i) for i in g]
+
 def chromosomeToString(a:chromosome)->str:
     """
     Parameter
@@ -21,8 +33,7 @@ def chromosomeToString(a:chromosome)->str:
     Work
         It converts the list of binary bits into a bit string
     """
-    s = "".join(str(e) for e in a)
-    return s
+    return "".join(str(e) for e in a)
 
 #Algorithm Methods
 def initialPopulationGeneration(size:int, chromosomeLength:int)->population:
@@ -37,13 +48,10 @@ def initialPopulationGeneration(size:int, chromosomeLength:int)->population:
         list of chromosomes 
     """
     initPopulation = [choices([0,1], k=chromosomeLength) for _ in range(size)]
-    print("Initial Popuation ")
-    for i in range(len(initPopulation)):
-        print(f"\tCandidate {i+1}: {chromosomeToString(initPopulation[i])}")
     return initPopulation
 
 
-def selectionProcess(fds:FitnessDS, index:int, size:int)->pairsList:
+def selectionProcess(fds:FitnessDS, index:int, populationSize:int)->pairsList:
     """ 
     It returns two parents from the set of candidates of the current generation based on their fitness.\n
     Index - Name\n
@@ -53,19 +61,20 @@ def selectionProcess(fds:FitnessDS, index:int, size:int)->pairsList:
     Args:
         fds (FitnssDS): It is a list of tuples, which has two elements: the chromoome and its fitness
         size (int): It is the size of the population.
+        populationSize (int): Fixed size of the children population thata we want to create
 
     Returns:
         pairsList (List[Tuple[chromosome,chromosome]]) : It returns the list of selected parents in a form of a list of tuples
     """
     fds.sort(key=lambda e:e[1], reverse=True)
-    fds = fds[:size]
+    fds = fds[:populationSize]
     def rouletteSelection(fds:FitnessDS)->pairsList:
         rouletteWheel=[]
         for i in fds:
             chromo, fitness = i
             rouletteWheel += [chromo]*fitness
         parentsList=[]
-        for i in range(1+len(fds)//2):
+        for i in range(1+populationSize//2):
             parent1 = choice(rouletteWheel)
             parent2 = choice(rouletteWheel)
             while parent1==parent2:
@@ -77,9 +86,9 @@ def selectionProcess(fds:FitnessDS, index:int, size:int)->pairsList:
         rankDS = []
         for i in range(len(fds)):
             chromo, fitness, rank = fds[i][0], fds[i][1], i+1
-            rankDS += [chromo]*rank
+            rankDS += [chromo]*(rank)
         parentsList=[]
-        for i in range(1+len(fds)//2):
+        for i in range(1+populationSize//2):
             parent1 = choice(rankDS)
             parent2 = choice(rankDS)
             while parent1==parent2:
@@ -237,8 +246,6 @@ def crossoverFunction(a:chromosome, b:chromosome,index:int) -> Tuple[chromosome,
     if index < 0 or index > 3:
         raise IndexError("Wrong index selection for method.")
     child1, child2 = crossoverMethodList[index](a,b)
-    print(f"Parents:  {chromosomeToString(a)}, {chromosomeToString(b)}")
-    print(f"Children: {chromosomeToString(child1)}, {chromosomeToString(child2)}")
     return child1, child2
 
 
@@ -300,7 +307,7 @@ def GeneticAlgorithm1(gaIndex:int):
         #Selection Criteria
         selectionIndex = int(input("Enter which Selecion Method you would like to implement: \n0 - Roulette Selection\n1 - Rank Based Selection\n "))
         #Selection of parents
-        pairsListofParents = selectionProcess(fds = fitDS, index = selectionIndex, size=size)
+        pairsListofParents = selectionProcess(fds = fitDS, index = selectionIndex)
         #Creating the next generation
         nextGeneration=[]
         # For  (MU, LAMDA) Evolution Strategy   
@@ -311,9 +318,9 @@ def GeneticAlgorithm1(gaIndex:int):
                 nextGeneration.append(p2)
         
         #Crossover Input
-        cross = int(input("Which type of Crossover: \n0 - Single Point Crossover \n1 - Two Point Crossovr \n2 - Multi Point Crossover \n3 - Uniform Crossover \nEnter: "))
+        crossIndex = int(input("Which type of Crossover: \n0 - Single Point Crossover \n1 - Two Point Crossovr \n2 - Multi Point Crossover \n3 - Uniform Crossover \nEnter: "))
         for i in pairsListofParents:
-            child1, child2 = crossoverFunction(a = i[0], b = i[1], index=cross)
+            child1, child2 = crossoverFunction(a = i[0], b = i[1], index=crossIndex)
             nextGeneration.append(child1)
             nextGeneration.append(child2)
         #Mutation Input

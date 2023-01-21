@@ -6,5 +6,6 @@ urlpatterns = [
     path('about/', views.about, name='debel_about'),
     path('layman/', views.layman, name='debel_layman'),
     path('virtuoso/', views.virtuoso, name='debel_virtuoso'),
-    path('expert/', views.expert, name='debel_expert')
+    path('expert/', views.expert, name='debel_expert'),
+    path('loadMusic/', views.LaymanLoadMusic, name='debel_music_layman')
 ]
