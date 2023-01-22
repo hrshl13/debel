@@ -25,23 +25,24 @@ Inputs from User
     b) Music Enthusiasts
         1. Number of Bars
         2. Number of notes per bar? (Time Signature)
-        3. BPM
+        3. Time Signature
         4. Key Note 
         5. Scale
         6. Scale Root (int)
-        7. Pauses?
-        8. Volume??
-        9. Instrument
+        7. Pauses
+        8. Instrument
+        9. Number of Octaves
     c) GA Specialist
-        1. Chromosome Length (would have to calculate stuff differently)
-        2. Mood (Happy/Sad)
-        3. Instrument
-        4. Type of GA Evolution Strategy
-        5. Population Size
-        6. Selecion Method
-        7. Type of Crossover
-        8. Mutation %
-        9. Number of Mutations
+        1. Number of Bars
+        2. Number of notes per bar? (Time Signature)
+        3. Mood (Happy/Sad)
+        4. Instrument
+        5. Type of GA Evolution Strategy
+        6. Population Size
+        7. Selecion Method
+        8. Type of Crossover
+        9. Mutation Probability
+        10. Number of Mutations
         
 """
 
@@ -91,10 +92,10 @@ def bitsToInteger(bits:List[int])->int:
     bitString = chromosomeToString(bits)
     return int(bitString, 2)
 
-def eventDSCreation(numTracks:int,numBars:int, gene: chromosome, isPause:bool, key:str, scale:str, scaleRoot:int, sig:str)->Dict:
+def eventDSCreation(numOctaves:int,numTracks:int,numBars:int, gene: chromosome, isPause:bool, key:str, scale:str, scaleRoot:float, sig:str)->Dict:
     
     notesPerBar = TIME_SIGNATURE_TO_BEATS[sig]
-    # If the Time Signature is 5/4, implement Dave Brubeck Quartet's "Take Five" 5/4 
+    # If the Time Signature is 5/4, implement Dave Brubeck Quartet's "Take Five", 5/4(3/4 + 2/4) Time Signature. 
     takeFive = False 
     if notesPerBar==5:
         takeFive=True
@@ -102,7 +103,7 @@ def eventDSCreation(numTracks:int,numBars:int, gene: chromosome, isPause:bool, k
     notes=[]
     for i in range(numBars*notesPerBar):
         notes.append(gene[i*BITS_PER_NOTE : i*BITS_PER_NOTE + BITS_PER_NOTE])
-    scl = EventScale(root=key, scale=scale, first=scaleRoot)
+    scl = EventScale(root=key, scale=scale, first=scaleRoot, octaves=numOctaves)
 
     eventDS = {
         "pitch":[],
@@ -134,7 +135,7 @@ def eventDSCreation(numTracks:int,numBars:int, gene: chromosome, isPause:bool, k
         # Not a pause note
         else:
             # If there are two notes of the same pitch simultaneously,
-            if len(eventDS["pitch"]) > 0 and eventDS["pitch"][-1] == integer:
+            if len(eventDS["pitch"]) > 0 and eventDS["pitch"][-1] == integer and not takeFive:
                 # Just increase the note length of the previous note
                 eventDS["beat"][-1] += noteLength
             else:
@@ -146,7 +147,7 @@ def eventDSCreation(numTracks:int,numBars:int, gene: chromosome, isPause:bool, k
     
     steps = []
     for step in range(numTracks):
-        steps.append([scl[(note+step*2) % len(scl)] for note in eventDS["pitch"]])
+        steps.append([int(scl[(note+step*2) % len(scl)]) for note in eventDS["pitch"]])
 
     eventDS["pitch"] = steps
     return eventDS
@@ -185,12 +186,11 @@ def metronome(bpm: int):
     freq = Iter(met, choice=[660, 440, 440, 440])
     return Sine(freq=freq, mul=amp).mix(2).out()
 
-def saveMidi(filename:str, numTracks:int,numBars:int, gene:chromosome, isPause:bool, key:str, scale:str, scaleRoot:int, sig:str,bpm:int):
+def saveMidi(filename:str, numOctaves:int, numTracks:int,numBars:int, gene:chromosome, isPause:bool, key:str, scale:str, scaleRoot:float, sig:str,bpm:int):
 
-    eventDS = eventDSCreation(numTracks, numBars, gene, isPause, key, scale, scaleRoot, sig)
+    eventDS = eventDSCreation(numOctaves, numTracks, numBars, gene, isPause, key, scale, scaleRoot, sig)
     if len(eventDS["pitch"][0]) != len(eventDS["beat"]) or len(eventDS["pitch"][0]) != len(eventDS["volume"]):
         raise ValueError
-
     mf = MIDIFile(1)
 
     track = 0

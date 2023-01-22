@@ -7,5 +7,7 @@ urlpatterns = [
     path('layman/', views.layman, name='debel_layman'),
     path('virtuoso/', views.virtuoso, name='debel_virtuoso'),
     path('expert/', views.expert, name='debel_expert'),
-    path('loadMusic/', views.LaymanLoadMusic, name='debel_music_layman')
+    path('laymanMusic/', views.LaymanLoadMusic, name='debel_music_layman'),
+    path('virtuosoMusic/', views.VirtuosoLoadMusic, name='debel_music_virtuoso'),
+    path('expertMusic/', views.ExpertLoadMusic, name='debel_music_expert')
 ]
