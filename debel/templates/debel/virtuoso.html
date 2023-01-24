@@ -4,8 +4,19 @@ This is Virtuoso's Website
 <div>
     <form action="" method="POST">
         {% csrf_token %}
-        {{ form.as_table }}
-        <input type="submit" value="Submit">
+        {% for field in form %}
+        <label class="
+                {% for class in field.label_classes %}
+                    {{ class }}
+                {% endfor %}" for="{{ field.auto_id }}">
+            {{ field.label }}
+        </label>
+        {{ field }}
+        <br>
+        {% endfor %}
+        <div class="btn btn-submit">
+            <input type="submit" value="Submit">
+        </div>
     </form>
 </div>
 {% endblock content %}

@@ -23,7 +23,7 @@ def layman(request):
             return redirect('debel_music_layman')
     else:
         form = laymanForm()
-    return render(request, 'debel/layman.html', {'title': "Layman's Corner", "form":form})
+    return render(request, 'debel/musicForm.html', {'title': "Layman's Corner",'formTitle':"Layman's Form", "form":form})
 
 def LaymanLoadMusic(request):
     # Get the user input from previous form using sessions
@@ -35,13 +35,13 @@ def LaymanLoadMusic(request):
     scale="major"
     if mood=="Sad":
         scale = "minorH"
-    numOctaves=2
+    numOctaves=3
     isPause=False
     numBars=8
     notesPerBar=4
     numTracks = 2
     populationSize=5
-    key="C"
+    key="F"
     scaleRoot=4
     sig="4/4"
     def gtfCreation(population:list):
@@ -110,7 +110,7 @@ def LaymanLoadMusic(request):
             geneToFile = gtfCreation(population)
             request.session["gtf"] = geneToFile
             # Asking Fitness for next generation
-            return render(request, 'debel/loadMusic.html', {'genetoFile':geneToFile})    
+            return render(request, 'debel/loadMusic.html', {'formTitle':"From Layman's",'genetoFile':geneToFile})    
         #if Termination == True
         elif request.POST.get("stopGen"):
             shutil.rmtree("static/laymanMusic/")
@@ -130,7 +130,7 @@ def LaymanLoadMusic(request):
         geneToFile = gtfCreation(population)
         #Phase 1 completes
         request.session["gtf"] = geneToFile
-        return render(request, 'debel/loadMusic.html', {'genetoFile':geneToFile})
+        return render(request, 'debel/loadMusic.html', {'formTitle':"From Layman's ",'genetoFile':geneToFile})
 
 def virtuoso(request):
     if request.method == "POST":
@@ -150,7 +150,7 @@ def virtuoso(request):
             return redirect('debel_music_virtuoso')
     else:
         form = virtuosoForm()
-        return render(request, 'debel/virtuoso.html', {'title': "Virtuoso's Studio", "form":form})
+        return render(request, 'debel/musicForm.html', {'title': "Virtuoso's Studio",'formTitle':"Virtuoso's Form", "form":form})
 
 def VirtuosoLoadMusic(request):
     numBars = int(request.session["numBars"])
@@ -159,12 +159,15 @@ def VirtuosoLoadMusic(request):
     keyNote = request.session["keyNote"]
     scale = request.session["scale"]
     rootOctave = float(request.session["rootOctave"])
-    pauses = bool(request.session["pauses"])
+    pauses = request.session["pauses"]
     numOctaves = int(request.session["numOctaves"])
     numTracks = int(request.session["numTracks"])
     instrument = request.session["instrument"]
     populationSize=5
-    
+    if pauses=="Yes":
+        pauses=True
+    else:
+        pauses=False
     def gtfCreation(population:list):
         """
         It saves the midi file of the music generated from the population, and then returns a dictionary containing the genes of the population as it's keys and the corresponding file path of the midi file genrated from the said gene.
@@ -231,7 +234,7 @@ def VirtuosoLoadMusic(request):
             geneToFile = gtfCreation(population)
             request.session["gtf"] = geneToFile
             # Asking Fitness for next generation
-            return render(request, 'debel/loadMusic.html', {'genetoFile':geneToFile})    
+            return render(request, 'debel/loadMusic.html', {'formTitle':"From Virtuoso's",'genetoFile':geneToFile})    
         #if Termination == True
         elif request.POST.get("stopGen"):
             if os.path.isdir("static/"+"virtuosoMusic/"):
@@ -252,7 +255,7 @@ def VirtuosoLoadMusic(request):
         geneToFile = gtfCreation(population)
         #Phase 1 completes
         request.session["gtf"] = geneToFile
-        return render(request, 'debel/loadMusic.html', {'genetoFile':geneToFile})
+        return render(request, 'debel/loadMusic.html', {'formTitle':"From Virtuoso's",'genetoFile':geneToFile})
     
 def expert(request):
     if request.method == "POST":
@@ -273,7 +276,7 @@ def expert(request):
             return redirect('debel_music_expert')
     else:
         form = expertForm()
-        return render(request, 'debel/expert.html', {'title': "Expert's Lab", "form":form})
+        return render(request, 'debel/musicForm.html', {'title': "Expert's Lab",'formTitle':"Expert's Form", "form":form})
 
 def ExpertLoadMusic(request):
     numBars = int(request.session["numBars"])
@@ -290,10 +293,10 @@ def ExpertLoadMusic(request):
     scale = "major"
     if mood=="Sad":
         scale = "minorM"
-    numOctaves = 3
+    numOctaves = 4
     numTracks = 2
     pauses = False
-    keyNote = "C"
+    keyNote = "E"
     rootOctave = 4
 
     def gtfCreation(population:list):
@@ -366,7 +369,7 @@ def ExpertLoadMusic(request):
             geneToFile = gtfCreation(population)
             request.session["gtf"] = geneToFile
             # Asking Fitness for next generation
-            return render(request, 'debel/loadMusic.html', {'genetoFile':geneToFile})    
+            return render(request, 'debel/loadMusic.html', {'formTitle':"From Expert's",'genetoFile':geneToFile})    
         #if Termination == True
         elif request.POST.get("stopGen"):
             if os.path.isdir("static/"+"expertMusic/"):
@@ -386,4 +389,4 @@ def ExpertLoadMusic(request):
         geneToFile = gtfCreation(population)
         #Phase 1 completes
         request.session["gtf"] = geneToFile
-        return render(request, 'debel/loadMusic.html', {'genetoFile':geneToFile})
+        return render(request, 'debel/loadMusic.html', {'formTitle':"From Expert's",'genetoFile':geneToFile})

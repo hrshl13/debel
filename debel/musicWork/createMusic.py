@@ -192,7 +192,7 @@ def saveMidi(filename:str, numOctaves:int, numTracks:int,numBars:int, gene:chrom
     if len(eventDS["pitch"][0]) != len(eventDS["beat"]) or len(eventDS["pitch"][0]) != len(eventDS["volume"]):
         raise ValueError
     mf = MIDIFile(1)
-
+    print(eventDS["volume"])
     track = 0
     channel = 0
 
