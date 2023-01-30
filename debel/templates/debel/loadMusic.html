@@ -1,22 +1,41 @@
-{% extends "debel/base.html" %}
-{% load static %}
-{% block content %}
-<form action="" method="POST">
-    {% csrf_token %}
-    <!-- Showing music here -->
-    {% for gene, file in genetoFile.items %}
-    <midi-player src="{% static file %}" sound-font visualizer="#myVisualizer">
-    </midi-player><br>
-    Enter Rating: <input type="number" name={{ gene }} id={{ gene }} min="1" max="10"><br>
-    <a href="{% static file %}">Download</a>
-    <br>
-    <br>
-    {% endfor %}
-    <button type="submit" name="rateSubmit" value="rateSubmit">Submit Rating</button>
-    <button type="submit" name="stopGen" value="stopGen">Stop Generation</button>
-    <script>
+{% extends "debel/base.html" %} {% load static %} {% block content %}
+<div class="form-container">
+  <div class="form">
+    <form action="" method="POST">
+      {% csrf_token %}
+      <div class="div form-header">
+        <h2>{{formTitle}}</h2>
+      </div>
+      <!-- Showing music here -->
+      {% for gene, file in genetoFile.items %}
+      <div class="card">
+        <div class="card-content">
+          <midi-player
+            src="{% static file %}"
+            sound-font
+            visualizer="#myVisualizer"
+          >
+          </midi-player
+          ><br />
+          <label class="form-label" for="{{gene}}"> Enter Rating </label>
+          <input
+            type="number"
+            name="{{gene}}"
+            id="{{gene}}"
+            min="1"
+            max="10"
+          /><br />
+          <a href="{% static file %}" class="download">Download</a>
+        </div>
+      </div>
 
+      <br />
+      <br />
+      {% endfor %}
+      <input type="submit" name="rateSubmit" value="Submit Rating" />
+      <input type="submit" name="stopGen" value="Stop Generation" />
+    </form>
+  </div>
+</div>
 
-    </script>
-</form>
 {% endblock content %}

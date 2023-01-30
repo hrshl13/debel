@@ -23,7 +23,7 @@ def layman(request):
             return redirect('debel_music_layman')
     else:
         form = laymanForm()
-    return render(request, 'debel/musicForm.html', {'title': "Layman's Corner",'formTitle':"Layman's Form", "form":form})
+    return render(request, 'debel/musicForm.html', {'title': "Layman's Corner",'formTitle':"Asking a Layman", "form":form})
 
 def LaymanLoadMusic(request):
     # Get the user input from previous form using sessions
@@ -150,7 +150,7 @@ def virtuoso(request):
             return redirect('debel_music_virtuoso')
     else:
         form = virtuosoForm()
-        return render(request, 'debel/musicForm.html', {'title': "Virtuoso's Studio",'formTitle':"Virtuoso's Form", "form":form})
+        return render(request, 'debel/musicForm.html', {'title': "Virtuoso's Studio",'formTitle':"Asking a Virtuoso", "form":form})
 
 def VirtuosoLoadMusic(request):
     numBars = int(request.session["numBars"])
@@ -276,7 +276,7 @@ def expert(request):
             return redirect('debel_music_expert')
     else:
         form = expertForm()
-        return render(request, 'debel/musicForm.html', {'title': "Expert's Lab",'formTitle':"Expert's Form", "form":form})
+        return render(request, 'debel/musicForm.html', {'title': "Expert's Lab",'formTitle':"Asking a Expert", "form":form})
 
 def ExpertLoadMusic(request):
     numBars = int(request.session["numBars"])

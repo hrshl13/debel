@@ -10,41 +10,6 @@ BITS_PER_NOTE=4
 Number of bits assigned for a single note 
 """
 
-"""
-Inputs from User
-3 types of Users:
-    1. Laymen
-    2. Music Enthusiasts
-    3. GA Specialist
-3 types of input:
-    a) Laymen
-        1. Mood? Happy, Sad
-        2. Time (in seconds) 16 seconds
-        3. Fast/Slow (Only 2 fixed bpms, 120 and 180)
-        4. Instrument
-    b) Music Enthusiasts
-        1. Number of Bars
-        2. Number of notes per bar? (Time Signature)
-        3. Time Signature
-        4. Key Note 
-        5. Scale
-        6. Scale Root (int)
-        7. Pauses
-        8. Instrument
-        9. Number of Octaves
-    c) GA Specialist
-        1. Number of Bars
-        2. Number of notes per bar? (Time Signature)
-        3. Mood (Happy/Sad)
-        4. Instrument
-        5. Type of GA Evolution Strategy
-        6. Population Size
-        7. Selecion Method
-        8. Type of Crossover
-        9. Mutation Probability
-        10. Number of Mutations
-        
-"""
 
 # The list of Scales, Keys and Instruments as allowed by the EventScale class of pyo
 SCALES = ["major", "minorH", "minorM", "ionian", "dorian", "phrygian", "lydian", "mixolydian", "aeolian", "locrian", "wholeTone", "majorPenta", "minorPenta", "egyptian", "majorBlues", "minorBlues","minorHungarian"]
@@ -152,39 +117,6 @@ def eventDSCreation(numOctaves:int,numTracks:int,numBars:int, gene: chromosome, 
     eventDS["pitch"] = steps
     return eventDS
 
-def eventCreation(numBars:int, gene: chromosome, isPause:bool, key:str, scale:str, scaleRoot:str, sig:str, bpm):
-    eventDS = eventDSCreation(numBars, gene, isPause, key, scale, scaleRoot, sig)
-    listOfEvents=[]
-    for line in eventDS["pitch"]:
-        listOfEvents.append( 
-            Events(
-                midinote=EventSeq(line, occurrences=1),
-                midivel=EventSeq(eventDS["velocity"], occurrences=1),
-                beat=EventSeq(eventDS["beat"], occurrences=1),
-                attack=0.001,
-                decay=0.05,
-                sustain=0.5,
-                release=0.005,
-                bpm=bpm
-            )
-            )
-    return listOfEvents
-
-def metronome(bpm: int):
-    """
-    Plays a Metronome (using pyo) the input beats per minute when called.
-
-    Args:
-        bpm (int): Beats Per Minute
-
-    Returns:
-        Would return a Sine obj, using out method, which will play the Metronome on the pyo server 
-    """
-    met = Metro(time=1 / (bpm / 60.0)).play()
-    t = CosTable([(0, 0), (50, 1), (200, .3), (500, 0)])
-    amp = TrigEnv(met, table=t, dur=.25, mul=15)
-    freq = Iter(met, choice=[660, 440, 440, 440])
-    return Sine(freq=freq, mul=amp).mix(2).out()
 
 def saveMidi(filename:str, numOctaves:int, numTracks:int,numBars:int, gene:chromosome, isPause:bool, key:str, scale:str, scaleRoot:float, sig:str,bpm:int):
 
@@ -218,3 +150,37 @@ def changeInstrument(midiFilePath:str, oldInstrument:str, newInstrument:str):
             el.activeSite.replace(el, newInstrumentClass())
         s.write("midi", midiFilePath)
     
+
+def metronome(bpm: int):
+    """
+    Plays a Metronome (using pyo) the input beats per minute when called.
+
+    Args:
+        bpm (int): Beats Per Minute
+
+    Returns:
+        Would return a Sine obj, using out method, which will play the Metronome on the pyo server 
+    """
+    met = Metro(time=1 / (bpm / 60.0)).play()
+    t = CosTable([(0, 0), (50, 1), (200, .3), (500, 0)])
+    amp = TrigEnv(met, table=t, dur=.25, mul=15)
+    freq = Iter(met, choice=[660, 440, 440, 440])
+    return Sine(freq=freq, mul=amp).mix(2).out()
+
+def eventCreation(numBars:int, gene: chromosome, isPause:bool, key:str, scale:str, scaleRoot:str, sig:str, bpm):
+    eventDS = eventDSCreation(numBars, gene, isPause, key, scale, scaleRoot, sig)
+    listOfEvents=[]
+    for line in eventDS["pitch"]:
+        listOfEvents.append( 
+            Events(
+                midinote=EventSeq(line, occurrences=1),
+                midivel=EventSeq(eventDS["velocity"], occurrences=1),
+                beat=EventSeq(eventDS["beat"], occurrences=1),
+                attack=0.001,
+                decay=0.05,
+                sustain=0.5,
+                release=0.005,
+                bpm=bpm
+            )
+            )
+    return listOfEvents
