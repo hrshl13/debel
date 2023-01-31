@@ -8,8 +8,8 @@
       </div>
       <!-- Showing music here -->
       {% for gene, file in genetoFile.items %}
-      <div class="card">
-        <div class="card-content">
+      <div class="cardLM">
+        <div class="card-contentLM">
           <midi-player
             src="{% static file %}"
             sound-font
@@ -28,8 +28,6 @@
           <a href="{% static file %}" class="download">Download</a>
         </div>
       </div>
-
-      <br />
       <br />
       {% endfor %}
       <input type="submit" name="rateSubmit" value="Submit Rating" />
