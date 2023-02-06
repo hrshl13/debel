@@ -64,6 +64,7 @@ def eventDSCreation(numOctaves:int,numTracks:int,numBars:int, gene: chromosome, 
     takeFive = False 
     if notesPerBar==5:
         takeFive=True
+        
 
     notes=[]
     for i in range(numBars*notesPerBar):
@@ -112,8 +113,10 @@ def eventDSCreation(numOctaves:int,numTracks:int,numBars:int, gene: chromosome, 
     
     steps = []
     for step in range(numTracks):
-        steps.append([int(scl[(note+step*2) % len(scl)]) for note in eventDS["pitch"]])
-
+        l = []
+        for note in eventDS["pitch"]:
+            l.append(int(scl[(note+step*2) % len(scl)]))
+        steps.append(l)
     eventDS["pitch"] = steps
     return eventDS
 
@@ -124,10 +127,8 @@ def saveMidi(filename:str, numOctaves:int, numTracks:int,numBars:int, gene:chrom
     if len(eventDS["pitch"][0]) != len(eventDS["beat"]) or len(eventDS["pitch"][0]) != len(eventDS["volume"]):
         raise ValueError
     mf = MIDIFile(1)
-    print(eventDS["volume"])
     track = 0
     channel = 0
-
     time = 0.0
     mf.addTrackName(track, time, "Sample Track")
     mf.addTempo(track, time, bpm)
